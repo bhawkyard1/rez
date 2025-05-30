@@ -15,6 +15,7 @@ from rez.utils.logging_ import print_error
 from rez.vendor.pika.adapters.blocking_connection import BlockingConnection
 from rez.vendor.pika.connection import ConnectionParameters
 from rez.vendor.pika.credentials import PlainCredentials
+from rez.vendor.pika.exceptions import AMQPConnectionError
 from rez.vendor.pika.spec import BasicProperties
 from rez.config import config
 
@@ -98,10 +99,9 @@ def _publish_message(host, amqp_settings, routing_key, data):
         content_encoding="utf-8",
         delivery_mode=amqp_settings.get("message_delivery_mode")
     )
-
     try:
         conn = BlockingConnection(params)
-    except socket.error as e:
+    except (socket.error, AMQPConnectionError) as e:
         print_error("Cannot connect to the message broker: %s" % e)
         return False
 

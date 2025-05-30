@@ -3,11 +3,15 @@
 
 
 """
-unit tests for 'utils.filesystem' module
+unit tests for 'utils' module
 """
 import os
+from unittest import mock
 from rez.tests.util import TestBase
-from rez.utils import filesystem
+from rez.utils import (
+    amqp,
+    filesystem
+)
 from rez.utils.platform_ import Platform, platform_
 
 
@@ -48,3 +52,16 @@ class TestCanonicalPath(TestBase):
         path = filesystem.canonical_path('/a/b/File.txt', platform)
         expects = '/a/b/file.txt'.replace('\\', os.sep)
         self.assertEqual(path, expects)
+
+
+class TestAMQP(TestBase):
+    def test_no_amqp_server_running(self):
+        with mock.patch("rez.utils.amqp.print_error") as mock_print_error:
+            assert not mock_print_error.called
+            amqp.publish_message(
+                host="http://localhost:5672",
+                amqp_settings={},
+                routing_key="",
+                data={}
+            )
+            assert mock_print_error.called
